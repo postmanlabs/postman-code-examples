@@ -1,6 +1,6 @@
 # postman-code-examples
 
-This repository contains example applications built using Postman Code. Specifically, these applications were created by connecting the Postman MCP Server, `code` toolset, to a coding agent.
+This repository contains examples of using Postman Code. Each example was created by connecting the Postman MCP Server, `code` toolset, to a coding agent.
 
 These examples aim to show how you can accomplish a few fundamental things with Postman Code:
 
