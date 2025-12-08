@@ -4,7 +4,7 @@ This is an example of using the Postman MCP Server, `code` toolset, to explore t
 
 ## Conversations
 
-Below are real Q&A exchanges between a human (🧑) and an AI agent (🤖) that uses Postman's MCP tools to search collections, inspect requests, and answer questions about the HubSpot API.
+Below are Q&A exchanges between a human (🧑) and an AI agent (🤖) that uses Postman's MCP tools to search collections, inspect requests, and answer questions about the HubSpot API.
 
 ### 🧑 **Tell me about each of the collections in HubSpot's public workspace.**
 
@@ -173,3 +173,32 @@ The `associationTypeId` defines the relationship type (e.g., primary company). U
 
 - Postman Collection: "CRM API Collections" → "Deals API" → "Search"
 - Same search pattern works for contacts, companies, tickets, and custom objects
+
+---
+
+## Other Questions You Could Ask
+
+Here are more questions and topics that your agent can help you explore:
+
+**Understanding the API landscape:**
+
+- What can I do with the HubSpot CMS API?
+- How do custom objects work in HubSpot?
+- What automation capabilities are available via API?
+
+**Use-case driven questions:**
+
+- How would I sync contacts between HubSpot and an external system?
+- What's the best way to bulk import data into HubSpot?
+- How do I set up webhooks to listen for contact updates?
+
+**Practical/operational:**
+
+- What scopes do I need for working with deals?
+- How does pagination work across HubSpot APIs?
+- What rate limits should I be aware of?
+
+**Flows and workflows:**
+
+- How do I use Postman Flows to automate invoice creation?
+- What agentic workflows has HubSpot published?

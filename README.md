@@ -10,14 +10,16 @@ These examples aim to show how you can accomplish a few fundamental things with 
 
 Each example includes its own README with conversation examples showing how the agent explored APIs, answered questions, or generated code. Where applicable, you'll also find setup instructions to run the example yourself.
 
-## Example Apps
+## Examples by Use Case
 
-### Exploring
+### Exploring APIs
 
-- [HubSpot API Explorer](./examples/hubspot-api-explorer/) — Ask questions about HubSpot's public API and get answers sourced directly from their Postman collections. Covers authentication, CRM objects, associations, and search.
-- Internal Postman explorer - explore workspaces and collections inside of your personal or organization's Postman account
+**How it works**: The agent uses MCP tool calls to navigate Postman's API network. For public APIs, it typically starts by searching for relevant requests with `searchPostmanElements`, then drills down using `getWorkspace` to see available collections, `getCollectionMap` to understand collection structure and read top-level documentation, `getCollectionFolder` to access folder-level docs, and `getCollectionRequest` / `getCollectionResponse` to inspect specific endpoints and example payloads. For internal APIs, it starts with `getWorkspaces` to list workspaces in your account or organization. This lets the agent answer questions by reading actual request definitions and documentation directly from Postman.
 
-### Building
+- [HubSpot API Explorer](./examples/hubspot-api-explorer/) — The user asks questions about HubSpot's public API and gets answers sourced directly from their Postman collections. Covers authentication, CRM objects, associations, and search.
+- [Internal API Explorer](./examples/internal-api-explorer/) — The user explores their team's workspaces and collections through conversation, asking the agent to find APIs, read documentation, and inspect request examples.
+
+### Generating API client code and building on it
 
 - Stripe API payments sandbox
 - tbd
