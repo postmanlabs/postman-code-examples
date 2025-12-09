@@ -1,4 +1,4 @@
-# examples/hubspot-api-explorer
+# hubspot-api-explorer
 
 This is an example of using the Postman MCP Server, `code` toolset, to explore the [HubSpot Public API Workspace](https://www.postman.com/hubspot/hubspot-public-api-workspace/overview) on Postman.
 

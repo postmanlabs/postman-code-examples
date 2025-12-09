@@ -18,17 +18,17 @@ Each example includes its own README with conversation examples showing how the 
 
 #### Public
 
-- [HubSpot API Explorer](./examples/hubspot-api-explorer/) — The user asks questions about HubSpot's public API and gets answers sourced directly from their Postman collections. Covers authentication, CRM objects, associations, and search.
+- [HubSpot API Explorer](./hubspot-api-explorer/) — The user asks questions about HubSpot's public API and gets answers sourced directly from their Postman collections. Covers authentication, CRM objects, associations, and search.
 
 #### Internal
 
-- [Internal API Explorer](./examples/internal-api-explorer/) — The user explores their team's workspaces and collections through conversation, asking the agent to find APIs, read documentation, and inspect request examples.
+- [Internal API Explorer](./internal-api-explorer/) — The user explores their team's workspaces and collections through conversation, asking the agent to find APIs, read documentation, and inspect request examples.
 
 ### Consuming APIs with generated clients
 
 **How it works**: The agent first explores APIs using the same tools described above—searching, navigating collections, reading request definitions and documentation—to build context. Then it calls `getCodeGenerationInstructions` to understand best practices and generates idiomatic client code following language-specific conventions, with request and response types (when response examples are available) and proper error handling.
 
-- [Stripe API](./examples/stripe-api/) — The user builds a working payments demo using Stripe's API. This example also demonstrates what happens when response examples aren't available in the collection—response types are marked as unverified.
+- [Stripe API](./stripe-api-payment-demo/) — The user builds a working payments demo using Stripe's API. This example also demonstrates what happens when response examples aren't available in the collection—response types are marked as unverified.
 
 ### Updating clients when APIs change
 

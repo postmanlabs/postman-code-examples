@@ -1,4 +1,4 @@
-# examples/stripe-api
+# stripe-api-payment-demo
 
 This is an example of using the Postman MCP Server, `code` toolset, to explore and consume the [Stripe API](https://www.postman.com/stripedev/stripe-developers/collection/v4lose6/stripe-api-2024-04-10) on Postman.
 
@@ -58,7 +58,7 @@ The demo will:
 **File Structure**
 
 ```
-examples/stripe-api/
+stripe-api-payment-demo/
 ├── package.json
 ├── tsconfig.json
 ├── demo.ts
@@ -95,7 +95,7 @@ examples/stripe-api/
 2. Install dependencies and run:
 
 ```bash
-cd examples/stripe-api
+cd stripe-api-payment-demo
 npm install
 STRIPE_SECRET_KEY=sk_test_... npm run demo
 ```
