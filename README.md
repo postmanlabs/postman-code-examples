@@ -28,7 +28,7 @@ Each example includes its own README with conversation examples showing how the 
 
 **How it works**: The agent first explores APIs using the same tools described above—searching, navigating collections, reading request definitions and documentation—to build context. Then it calls `getCodeGenerationInstructions` to understand best practices and generates idiomatic client code following language-specific conventions, with request and response types (when response examples are available) and proper error handling.
 
-- [Stripe API](./stripe-api-payment-demo/) — The user builds a working payments demo using Stripe's API. This example also demonstrates what happens when response examples aren't available in the collection—response types are marked as unverified.
+- [Stripe API Payment Demo](./stripe-api-payment-demo/) — The user builds a working payments demo using Stripe's API. This example also demonstrates what happens when response examples aren't available in the collection—response types are marked as unverified.
 
 ### Updating clients when APIs change
 
