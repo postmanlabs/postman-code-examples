@@ -1,10 +1,12 @@
 # Internal API Explorer
 
-This example demonstrates using Postman's MCP Server to explore your company's internal APIs through natural conversation. The AI agent searches across workspaces, discovers collections, and helps you understand API ownership and capabilities.
+This example demonstrates using Postman's MCP Server to explore your company's internal APIs through natural conversation. The README below shows the conversation flow.
 
-## Conversations
+> **Note:** The conversation has been cleaned up for readability.
 
-Below are Q&A exchanges between a human (🧑) and an AI agent (🤖) that uses Postman's MCP tools to search workspaces, inspect collections, and answer questions about internal APIs.
+## Conversation
+
+Below are Q&A exchanges between a human (🧑) and an AI agent (🤖) exploring internal APIs.
 
 ### 🧑 **Find my company's search API**
 

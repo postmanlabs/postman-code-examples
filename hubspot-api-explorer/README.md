@@ -1,10 +1,12 @@
 # hubspot-api-explorer
 
-This is an example of using the Postman MCP Server, `code` toolset, to explore the [HubSpot Public API Workspace](https://www.postman.com/hubspot/hubspot-public-api-workspace/overview) on Postman.
+This is an example of using the Postman MCP Server, `code` toolset, to explore the [HubSpot Public API Workspace](https://www.postman.com/hubspot/hubspot-public-api-workspace/overview) on Postman. The README below shows the conversation flow.
 
-## Conversations
+> **Note:** The conversation has been cleaned up for readability.
 
-Below are Q&A exchanges between a human (🧑) and an AI agent (🤖) that uses Postman's MCP tools to search collections, inspect requests, and answer questions about the HubSpot API.
+## Conversation
+
+Below are Q&A exchanges between a human (🧑) and an AI agent (🤖) exploring the HubSpot API.
 
 ### 🧑 **Tell me about each of the collections in HubSpot's public workspace.**
 

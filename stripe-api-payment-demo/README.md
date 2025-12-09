@@ -1,16 +1,33 @@
 # stripe-api-payment-demo
 
-This is an example of using the Postman MCP Server, `code` toolset, to explore and consume the [Stripe API](https://www.postman.com/stripedev/stripe-developers/collection/v4lose6/stripe-api-2024-04-10) on Postman.
+This is an example of using the Postman MCP Server, `code` toolset, to explore and consume the [Stripe API](https://www.postman.com/stripedev/stripe-developers/collection/v4lose6/stripe-api-2024-04-10) on Postman. The README below shows the conversation flow, and the code in this repository is what was generated as part of that flow.
 
-**⚠️ Note about Unverified Types**
+> **Note:** The conversation has been cleaned up for readability, but the code is exactly what was generated.
 
-The Stripe API collection we used does not include response examples for the PaymentIntent endpoints. This means the response types in the generated code (like `PaymentIntent`) were inferred from general API knowledge rather than sourced from the collection. These types may be incomplete or incorrect, so they are marked as `UNVERIFIED TYPE` in the generated code. This demo illustrates what happens when a Postman collection lacks response examples—the agent must make assumptions about response shapes.
+## About this example
 
-**💡 Tip:** Add response examples to your Postman collections! This enables accurate response types and proper error handling in generated code.
+One aspect of this demo is illustrating what happens when a Postman collection lacks response examples—the agent must make assumptions about response shapes. The collection we used doesn't include response examples for the PaymentIntent endpoints, so the response types in the generated code were inferred and are marked as `UNVERIFIED TYPE`. Adding response examples to your collections enables accurate response types and proper error handling in generated code.
 
-## Conversations
+### Run the demo
 
-Below are Q&A exchanges between a human (🧑) and an AI agent (🤖) that uses Postman's MCP tools to search collections, inspect requests, generate API client code, and build working examples.
+1. Clone the repo and navigate to this example:
+
+```bash
+git clone https://github.com/postmanlabs/postman-code-examples.git
+cd postman-code-examples/stripe-api-payment-demo
+```
+
+2. Get a Stripe test API key from [dashboard.stripe.com/test/apikeys](https://dashboard.stripe.com/test/apikeys)
+3. Install dependencies and run:
+
+```bash
+npm install
+STRIPE_SECRET_KEY=sk_test_... npm run demo
+```
+
+## Conversation
+
+Below are Q&A exchanges between a human (🧑) and an AI agent (🤖) building a Stripe payment demo.
 
 ### 🧑 **Create a plan to build a demo of accepting a sandbox payment with Stripe.**
 

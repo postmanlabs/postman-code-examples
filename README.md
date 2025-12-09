@@ -1,12 +1,12 @@
 # postman-code-examples
 
-This repository contains examples of using Postman Code. Each example was created by connecting the Postman MCP Server, `code` toolset, to a coding agent.
+This repository contains examples of using Postman Code. Each example was created by connecting the [Postman MCP Server](https://github.com/postmanlabs/postman-mcp-server), `code` toolset, to a coding agent.
 
 These examples aim to show how you can accomplish a few fundamental things with Postman Code:
 
-- Search for APIs on Postman and explore them: both internal and public APIs
-- Generate high-quality, API client code to consume APIs
-- Consume API updates and regenerate client code
+- **Exploring APIs** — Search for APIs on Postman and explore them: both internal and public APIs
+- **Consuming APIs** — Generate high-quality, API client code to consume APIs
+- **Syncing API Changes** — Consume API updates and regenerate client code
 
 Each example includes its own README with conversation examples showing how the agent explored APIs, answered questions, or generated code. Where applicable, you'll also find setup instructions to run the example yourself.
 
@@ -14,7 +14,7 @@ Each example includes its own README with conversation examples showing how the 
 
 ### Exploring APIs
 
-**How it works**: The agent uses MCP tool calls to navigate Postman's API network. For public APIs, it typically starts by searching for relevant requests with `searchPostmanElements`, then drills down using `getWorkspace` to see available collections, `getCollectionMap` to understand collection structure and read top-level documentation, `getCollectionFolder` to access folder-level docs, and `getCollectionRequest` / `getCollectionResponse` to inspect specific endpoints and example payloads. For internal APIs, it starts with `getWorkspaces` to list workspaces in your account or organization. This lets the agent answer questions by reading actual request definitions and documentation directly from Postman.
+See how the agent navigates Postman's API network to answer questions about APIs—reading actual request definitions and documentation directly from collections. Key tools: `searchPostmanElements`, `getWorkspaces`, `getCollectionMap`, `getCollectionRequest`, `getCollectionResponse`.
 
 #### Public
 
@@ -24,15 +24,16 @@ Each example includes its own README with conversation examples showing how the 
 
 - [Internal API Explorer](./internal-api-explorer/) — The user explores their team's workspaces and collections through conversation, asking the agent to find APIs, read documentation, and inspect request examples.
 
-### Consuming APIs with generated clients
+### Consuming APIs
 
-**How it works**: The agent first explores APIs using the same tools described above—searching, navigating collections, reading request definitions and documentation—to build context. Then it calls `getCodeGenerationInstructions` to understand best practices and generates idiomatic client code following language-specific conventions, with request and response types (when response examples are available) and proper error handling.
+See how the agent generates production-ready client code directly from Postman collections using all the context that is available. Key tools: `getCodeGenerationInstructions`, plus the exploration tools above.
 
 - [Stripe API Payment Demo](./stripe-api-payment-demo/) — The user builds a working payments demo using Stripe's API. This example also demonstrates what happens when response examples aren't available in the collection—response types are marked as unverified.
 
-### Updating clients when APIs change
+### Syncing API Changes
 
-- tbd
+See how the agent detects changes in Postman collections and regenerates client code to stay current—no manual diff-reading required.
+
 - tbd
 
 ## Contributing
