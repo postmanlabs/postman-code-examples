@@ -10,6 +10,10 @@ These examples aim to show how you can accomplish a few fundamental things with 
 
 Each example includes its own README with conversation examples showing how the agent explored APIs, answered questions, or generated code. Where applicable, you'll also find setup instructions to run the example yourself.
 
+Watch the example video:
+
+https://github.com/user-attachments/assets/562cc380-28af-411f-8f7c-af90b2d6124f
+
 ## Examples by Use Case
 
 ### Exploring APIs
