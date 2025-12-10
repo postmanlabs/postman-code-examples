@@ -5,7 +5,7 @@ This repository contains examples of using Postman Code. Each example was create
 These examples aim to show how you can accomplish a few fundamental things with Postman Code:
 
 - **Exploring APIs** — Search for APIs on Postman and explore them: both internal and public APIs
-- **Consuming APIs** — Generate high-quality, API client code to consume APIs
+- **Consuming APIs** — Generate high-quality, well-organized client code with types and error handling
 - **Syncing API Changes** — Consume API updates and regenerate client code
 
 Each example includes its own README with conversation examples showing how the agent explored APIs, answered questions, or generated code. Where applicable, you'll also find setup instructions to run the example yourself.
