@@ -38,8 +38,12 @@ See how the agent generates production-ready client code directly from Postman c
 
 See how the agent detects changes in Postman collections and regenerates client code to stay current—no manual diff-reading required.
 
-- tbd
+- Coming soon!
+
+## Questions & Issues
+
+If you run into problems or have comments/suggestions, please [open an issue](https://github.com/postmanlabs/postman-code-examples/issues). We'd love to hear from you and respond quickly.
 
 ## Contributing
 
-Contribute an example!
+If you've used Postman Code to explore APIs or generate code and are willing to share your example, open an issue and let us know. We'll help get it into the example list!
