@@ -18,7 +18,7 @@ https://github.com/user-attachments/assets/562cc380-28af-411f-8f7c-af90b2d6124f
 
 ### Exploring APIs
 
-See how the agent navigates Postman's API network to answer questions about APIs—reading actual request definitions and documentation directly from collections. Key tools: `searchPostmanElements`, `getWorkspaces`, `getCollectionMap`, `getCollectionRequest`, `getCollectionResponse`.
+See how the agent navigates Postman's API network to answer questions about APIs—reading actual request definitions and documentation directly from collections. Key tools include: `searchPostmanElements`, `getWorkspaces`, `getCollection`, `getCollectionRequest`, `getCollectionResponse`.
 
 #### Public
 
