@@ -2,43 +2,16 @@
 
 This repository contains examples of using Postman Code. Each example was created by connecting the [Postman MCP Server](https://github.com/postmanlabs/postman-mcp-server), `code` toolset, to a coding agent.
 
-These examples aim to show how you can accomplish a few fundamental things with Postman Code:
-
-- **Exploring APIs** — Search for APIs on Postman and explore them: both internal and public APIs
-- **Consuming APIs** — Generate high-quality, well-organized client code with types and error handling
-- **Syncing API Changes** — Consume API updates and regenerate client code
-
 Each example includes its own README with conversation examples showing how the agent explored APIs, answered questions, or generated code. Where applicable, you'll also find setup instructions to run the example yourself.
 
 Watch the example video:
 
 https://github.com/user-attachments/assets/562cc380-28af-411f-8f7c-af90b2d6124f
 
-## Examples by Use Case
+## Examples
 
-### Exploring APIs
-
-See how the agent navigates Postman's API network to answer questions about APIs—reading actual request definitions and documentation directly from collections. Key tools include: `searchPostmanElements`, `getWorkspaces`, `getCollection`, `getCollectionRequest`, `getCollectionResponse`.
-
-#### Public
-
-- [HubSpot API Explorer](./hubspot-api-explorer/) — The user asks questions about HubSpot's public API and gets answers sourced directly from their Postman collections. Covers authentication, CRM objects, associations, and search.
-
-#### Internal
-
-- [Internal API Explorer](./internal-api-explorer/) — The user explores their team's workspaces and collections through conversation, asking the agent to find APIs, read documentation, and inspect request examples.
-
-### Consuming APIs
-
-See how the agent generates production-ready client code directly from Postman collections using all the context that is available. Key tools: `getCodeGenerationInstructions`, plus the exploration tools above.
-
-- [Stripe API Payment Demo](./stripe-api-payment-demo/) — The user builds a working payments demo using Stripe's API. This example also demonstrates what happens when response examples aren't available in the collection—response types are marked as unverified.
-
-### Syncing API Changes
-
-See how the agent detects changes in Postman collections and regenerates client code to stay current—no manual diff-reading required.
-
-- Coming soon!
+- [Notion API Demo](./notion-api-demo/) — Demonstrates searching, querying databases, and retrieving pages/blocks from Notion.
+- [Stripe API Payment Demo](./stripe-api-payment-demo/) — A working payments demo using Stripe's API for creating and confirming payment intents.
 
 ## Questions & Issues
 
