@@ -1,6 +1,6 @@
 # Notion CLI
 
-A CLI tool for searching and navigating a Notion workspace. Built using [Postman Code](https://github.com/postmanlabs/postman-code) to generate type-safe API clients from the official [Notion API Postman Collection](https://www.postman.com/notionhq/notion-s-api-workspace/collection/a1b2c3d/notion-api).
+A CLI tool for searching and navigating a Notion workspace. Built using [Postman Code](https://github.com/postmanlabs/postman-code-examples) to generate type-safe API clients from the official [Notion API Postman Collection](https://www.postman.com/notionhq/notion-s-api-workspace/collection/a1b2c3d/notion-api).
 
 Designed for AI agents that need to explore and read content from Notion workspaces.
 
