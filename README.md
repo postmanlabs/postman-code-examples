@@ -8,7 +8,7 @@ Postman Code connects your coding agent to Postman, enabling it to search for AP
 
 Example apps built with Postman Code:
 
-- [Notion API Demo](./notion-api-demo/) — A CLI for searching and navigating Notion workspaces
+- [Notion CLI](./notion-cli/) — A CLI for exploring and reading content from Notion workspaces
 - [Stripe API Payment Demo](./stripe-api-payment-demo/) — A working payments demo using Stripe's PaymentIntent API
 
 Each example includes generated code and setup instructions.

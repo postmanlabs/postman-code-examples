@@ -1,9 +1,14 @@
 {
   "name": "notion-cli",
   "version": "1.0.0",
-  "description": "CLI tool for finding and flagging stale Notion pages using the Notion API",
+  "description": "CLI for exploring and reading content from a Notion workspace",
   "type": "module",
+  "bin": {
+    "notion-cli": "dist/cli.js"
+  },
   "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
     "cli": "npx tsx cli.ts"
   },
   "keywords": [
@@ -19,7 +24,6 @@
     "typescript": "^5.3.0"
   },
   "dependencies": {
-    "commander": "^14.0.2",
-    "dotenv": "^17.2.3"
+    "commander": "^14.0.2"
   }
 }
