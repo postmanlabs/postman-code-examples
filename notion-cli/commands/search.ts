@@ -3,7 +3,7 @@
  */
 
 import { Command } from "commander";
-import { notion, type NotionDatabase, type NotionPage } from "../src/postman/notion-api/index.js";
+import { createNotionClient, type NotionDatabase, type NotionPage } from "../src/postman/notion-api/index.js";
 import { getBearerToken, getPageTitle, formatDate } from "../helpers.js";
 
 type SearchFilterOption = "page" | "database" | "all";
@@ -64,6 +64,7 @@ Examples:
       options: { cursor?: string; limit: string; workspace?: boolean; filter?: string },
     ) => {
     const bearerToken = getBearerToken();
+    const notion = createNotionClient(bearerToken);
     const filterOption = normalizeFilterOption(options.filter);
 
     // Workspace mode: paginate internally and filter for workspace-level pages
@@ -87,7 +88,7 @@ Examples:
 
         // Paginate through all results internally
         do {
-          const response = await notion.search(bearerToken, "2022-02-22", {
+          const response = await notion.search({
             query: query || undefined,
             filter: { value: "page", property: "object" },
             start_cursor: cursor,
@@ -143,7 +144,7 @@ Examples:
     console.log(query ? `🔍 Searching ${filterLabel} for "${query}"...\n` : `🔍 Listing ${filterLabel}...\n`);
 
     try {
-      const response = await notion.search(bearerToken, "2022-02-22", {
+      const response = await notion.search({
         query: query || undefined,
         ...(filterOption === "all" ? {} : { filter: { value: filterOption, property: "object" } }),
         start_cursor: options.cursor,

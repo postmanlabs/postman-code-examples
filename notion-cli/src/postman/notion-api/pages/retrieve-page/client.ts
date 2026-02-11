@@ -45,17 +45,5 @@ export async function retrievePage(
   }
 
   const error = (await response.json()) as NotionError;
-
-  switch (response.status) {
-    case 400:
-      throw new Error(`Bad Request: ${error.message}`);
-    case 401:
-      throw new Error(`Unauthorized: ${error.message}`);
-    case 404:
-      throw new Error(`Page not found: ${error.message}`);
-    case 429:
-      throw new Error(`Rate limited: ${error.message}`);
-    default:
-      throw new Error(`Notion API error (${response.status}): ${error.message}`);
-  }
+  throw new Error(`Notion API error (${response.status}): ${error.message}`);
 }

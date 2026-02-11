@@ -4,14 +4,14 @@
  */
 
 import { Command } from "commander";
-import { notion, type NotionBlock } from "../src/postman/notion-api/index.js";
+import { createNotionClient, type NotionBlock } from "../src/postman/notion-api/index.js";
 import { getBearerToken, getPageTitle, formatDate, formatPropertyValue, formatBlock } from "../helpers.js";
 
 // -- page get -----------------------------------------------------------------
 
 const pageGetCommand = new Command("get")
   .description("Read a page's content, properties, and child pages")
-  .argument("<page-id>", "Notion page ID or URL")
+  .argument("<page-id>", "Notion page ID")
   .option("-r, --raw", "output raw JSON instead of formatted text")
   .addHelpText(
     "after",
@@ -37,12 +37,13 @@ Examples:
   )
   .action(async (pageId: string, options: { raw?: boolean }) => {
     const bearerToken = getBearerToken();
+    const notion = createNotionClient(bearerToken);
 
     console.log(`📄 Fetching page...\n`);
 
     try {
       // First fetch page metadata
-      const page = await notion.pages.retrieve(pageId, bearerToken, "2022-02-22");
+      const page = await notion.pages.retrieve(pageId);
 
       // Show page info
       const title = getPageTitle(page);
@@ -81,7 +82,7 @@ Examples:
         let cursor: string | undefined;
 
         do {
-          const response = await notion.blocks.retrieveChildren(blockId, bearerToken, "2022-02-22", {
+          const response = await notion.blocks.retrieveChildren(blockId, {
             start_cursor: cursor,
             page_size: 100,
           });

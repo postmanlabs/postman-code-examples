@@ -5,14 +5,14 @@
  */
 
 import { Command } from "commander";
-import { notion, type DatabasePropertySchema } from "../src/postman/notion-api/index.js";
+import { createNotionClient, type DatabasePropertySchema } from "../src/postman/notion-api/index.js";
 import { getBearerToken, getPageTitle, formatDate, formatPropertyValue } from "../helpers.js";
 
 // -- database get -------------------------------------------------------------
 
 const databaseGetCommand = new Command("get")
   .description("View a database's metadata and schema")
-  .argument("<database-id>", "Notion database ID or URL")
+  .argument("<database-id>", "Notion database ID")
   .option("-r, --raw", "output raw JSON instead of formatted text")
   .addHelpText(
     "after",
@@ -32,11 +32,12 @@ Examples:
   )
   .action(async (databaseId: string, options: { raw?: boolean }) => {
     const bearerToken = getBearerToken();
+    const notion = createNotionClient(bearerToken);
 
     console.log(`🗃️ Fetching database...\n`);
 
     try {
-      const database = await notion.databases.retrieve(databaseId, bearerToken, "2022-02-22");
+      const database = await notion.databases.retrieve(databaseId);
 
       if (options.raw) {
         console.log(JSON.stringify(database, null, 2));
@@ -82,7 +83,7 @@ Examples:
 
 const databaseListCommand = new Command("list")
   .description("List entries in a database")
-  .argument("<database-id>", "Notion database ID or URL")
+  .argument("<database-id>", "Notion database ID")
   .option("-r, --raw", "output raw JSON instead of formatted text")
   .option("-n, --limit <number>", "max entries to return, 1-100", "20")
   .option("-c, --cursor <cursor>", "pagination cursor from a previous query")
@@ -107,12 +108,13 @@ Examples:
   )
   .action(async (databaseId: string, options: { raw?: boolean; limit: string; cursor?: string }) => {
     const bearerToken = getBearerToken();
+    const notion = createNotionClient(bearerToken);
     const pageSize = Math.min(parseInt(options.limit, 10) || 20, 100);
 
     console.log(`🗃️ Listing database entries...\n`);
 
     try {
-      const queryResponse = await notion.databases.query(databaseId, bearerToken, "2022-02-22", {
+      const queryResponse = await notion.databases.query(databaseId, {
         page_size: pageSize,
         start_cursor: options.cursor,
       });
