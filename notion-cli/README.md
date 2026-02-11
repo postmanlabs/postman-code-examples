@@ -114,34 +114,47 @@ notion-cli search --workspace
 
 The `--workspace` flag paginates through results internally and returns only pages whose parent is the workspace — these are your starting points for building a sitemap.
 
-### page
+### page get
 
 Read a page's content:
 
 ```bash
-notion-cli page <page-id>
+notion-cli page get <page-id>
 
 # Output raw JSON
-notion-cli page <page-id> --raw
+notion-cli page get <page-id> --raw
 ```
 
 Shows page metadata (title, ID, parent, dates, URL), all properties, and content blocks with formatting. Child pages and databases are listed with their IDs for further navigation. The command recursively fetches nested blocks (toggles, callouts, etc.) but stops at child pages and databases.
 
-### database
+### database get
 
-Query a database and view its schema:
+View a database's metadata and schema:
 
 ```bash
-notion-cli database <database-id>
+notion-cli database get <database-id>
 
-# Limit results
-notion-cli database <database-id> --limit 50
-
-# Paginate through entries
-notion-cli database <database-id> --cursor <cursor>
+# Output raw JSON
+notion-cli database get <database-id> --raw
 ```
 
-Shows the database metadata, schema (property names and types), and entries with titles and IDs.
+Shows the database title, ID, parent, dates, URL, and schema (property names and types). Use `database list` to see the entries.
+
+### database list
+
+List entries in a database:
+
+```bash
+notion-cli database list <database-id>
+
+# Limit results
+notion-cli database list <database-id> --limit 50
+
+# Paginate through entries
+notion-cli database list <database-id> --cursor <cursor>
+```
+
+Shows entries with titles, IDs, property values, and URLs. Each entry is a Notion page — use `page get <entry-id>` to read its full content.
 
 ## Example workflow: mapping a workspace
 
@@ -154,13 +167,16 @@ If you want a workspace sitemap, the high-level loop looks like this:
 notion-cli search --workspace
 
 # 2. Read each root page to discover its children
-notion-cli page <root-id>
+notion-cli page get <root-id>
 
-# 3. Query any databases found
-notion-cli database <db-id>
+# 3. View a database's schema
+notion-cli database get <db-id>
 
-# 4. Recurse into child pages
-notion-cli page <child-id>
+# 4. List entries in a database
+notion-cli database list <db-id>
+
+# 5. Read an entry or child page
+notion-cli page get <child-id>
 ```
 
 For AI agents: run `notion-cli --help` — it includes the full workspace mapping workflow, command details, and examples. Each subcommand also has its own `--help` with detailed usage.
@@ -171,7 +187,8 @@ If you want to modify the CLI, use `npm run cli` during development to run from 
 
 ```bash
 npm run cli -- search --workspace
-npm run cli -- page <page-id>
+npm run cli -- page get <page-id>
+npm run cli -- database list <database-id>
 ```
 
 After making changes, rebuild with `npm run build` to update the linked `notion-cli` command.

@@ -107,7 +107,7 @@ export interface SearchParams {
 /** Response from search endpoint */
 export interface SearchResponse {
   object: "list";
-  results: NotionPage[];
+  results: Array<NotionPage | NotionDatabase>;
   next_cursor: string | null;
   has_more: boolean;
 }
