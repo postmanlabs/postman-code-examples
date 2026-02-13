@@ -9,7 +9,19 @@
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
-    "cli": "npx tsx cli.ts"
+    "cli": "npx tsx cli.ts",
+    "test": "node --import tsx --test ./test/docs.test.ts ./test/user.test.ts ./test/search.test.ts ./test/page.test.ts ./test/block.test.ts ./test/comment.test.ts ./test/database.test.ts ./test/datasource.test.ts ./test/file.test.ts ./test/integration-cmd.test.ts",
+    "test:docs": "node --import tsx --test ./test/docs.test.ts",
+    "test:user": "node --import tsx --test ./test/user.test.ts",
+    "test:search": "node --import tsx --test ./test/search.test.ts",
+    "test:page": "node --import tsx --test ./test/page.test.ts",
+    "test:block": "node --import tsx --test ./test/block.test.ts",
+    "test:comment": "node --import tsx --test ./test/comment.test.ts",
+    "test:database": "node --import tsx --test ./test/database.test.ts",
+    "test:datasource": "node --import tsx --test ./test/datasource.test.ts",
+    "test:file": "node --import tsx --test ./test/file.test.ts",
+    "test:integration": "node --import tsx --test ./test/integration-cmd.test.ts",
+    "test:auth": "node --import tsx --test ./test/auth.test.ts"
   },
   "keywords": [
     "notion",

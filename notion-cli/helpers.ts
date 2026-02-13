@@ -3,9 +3,50 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join } from "path";
+import { join, extname } from "path";
 import { homedir } from "os";
 import type { NotionPage, NotionBlock, PropertyValue } from "./src/postman/notion-api/index.js";
+
+// ============================================================================
+// MIME type lookup (no external dependency)
+// ============================================================================
+
+const MIME_TYPES: Record<string, string> = {
+  ".pdf": "application/pdf",
+  ".txt": "text/plain",
+  ".csv": "text/csv",
+  ".json": "application/json",
+  ".html": "text/html",
+  ".htm": "text/html",
+  ".xml": "application/xml",
+  ".md": "text/markdown",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".mov": "video/quicktime",
+  ".mp3": "audio/mpeg",
+  ".wav": "audio/wav",
+  ".zip": "application/zip",
+  ".gz": "application/gzip",
+  ".tar": "application/x-tar",
+  ".doc": "application/msword",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".xls": "application/vnd.ms-excel",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ".ppt": "application/vnd.ms-powerpoint",
+  ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+};
+
+export function lookup(filename: string): string {
+  const ext = extname(filename).toLowerCase();
+  return MIME_TYPES[ext] || "application/octet-stream";
+}
 
 // ============================================================================
 // Config
@@ -32,17 +73,59 @@ export function writeConfig(config: Record<string, string>): void {
 // ============================================================================
 
 export function getBearerToken(): string {
-  const token = process.env.NOTION_API_KEY || readConfig().NOTION_API_KEY;
+  const token = process.env.NOTION_TOKEN || readConfig().NOTION_TOKEN;
   if (!token) {
-    console.error("Error: No Notion API key found.");
+    console.error("Error: No Notion token found.");
     console.error("");
-    console.error("Set your key with:");
-    console.error("  notion-cli set-token <your-integration-token>");
+    console.error("Authenticate with one of:");
+    console.error("  notion-cli auth-internal set <token>   (internal integration)");
+    console.error("  notion-cli auth-public login           (public integration / OAuth)");
     console.error("");
-    console.error("Or set the NOTION_API_KEY environment variable.");
+    console.error("Or set the NOTION_TOKEN environment variable.");
     process.exit(1);
   }
   return token;
+}
+
+// ============================================================================
+// OAuth Credential Helpers
+// ============================================================================
+
+export interface OAuthCredentials {
+  clientId: string;
+  clientSecret: string;
+}
+
+/**
+ * Resolve OAuth client credentials from environment variables or config file.
+ * Returns null if neither source has them.
+ */
+export function getOAuthCredentials(): OAuthCredentials | null {
+  const clientId = process.env.NOTION_OAUTH_CLIENT_ID || readConfig().NOTION_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.NOTION_OAUTH_CLIENT_SECRET || readConfig().NOTION_OAUTH_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    return null;
+  }
+  return { clientId, clientSecret };
+}
+
+/**
+ * Resolve OAuth client credentials, or exit with an error message.
+ */
+export function requireOAuthCredentials(): OAuthCredentials {
+  const creds = getOAuthCredentials();
+  if (!creds) {
+    console.error("Error: OAuth client credentials not found.");
+    console.error("");
+    console.error("Set them via environment variables:");
+    console.error("  NOTION_OAUTH_CLIENT_ID");
+    console.error("  NOTION_OAUTH_CLIENT_SECRET");
+    console.error("");
+    console.error("Or run 'notion-cli auth login' which will prompt and store them.");
+    process.exit(1);
+  }
+  return creds;
 }
 
 export function getPageTitle(page: NotionPage): string {
