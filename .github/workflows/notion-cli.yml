@@ -1,0 +1,37 @@
+name: notion-cli
+
+on:
+  push:
+    paths:
+      - "notion-cli/**"
+  pull_request:
+    paths:
+      - "notion-cli/**"
+  workflow_dispatch: # allow manual runs
+
+defaults:
+  run:
+    working-directory: notion-cli
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: notion-cli/package-lock.json
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Integration tests
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: npm test

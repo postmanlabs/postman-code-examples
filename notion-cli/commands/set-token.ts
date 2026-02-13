@@ -61,7 +61,8 @@ export const setTokenCommand = new Command("set-token")
     }
 
     const config = readConfig();
-    config.NOTION_API_KEY = token;
+    config.NOTION_TOKEN = token;
     writeConfig(config);
     console.log(`Token saved to ${CONFIG_FILE}`);
+    process.exit(0);
   });
