@@ -4,7 +4,7 @@
  *   datasource query <id>          — query entries from a data source
  *   datasource templates <id>      — list available templates
  *   datasource create <database-id> — create a data source in a database
- *   datasource update <id>         — update a data source
+ *   datasource update <id>         — update title, schema, or properties
  */
 
 import { Command } from "commander";
@@ -273,24 +273,90 @@ Examples:
 
 // -- datasource update --------------------------------------------------------
 
+/** Property types that can be added via --add-property */
+const VALID_PROPERTY_TYPES = [
+  "rich_text", "number", "select", "multi_select", "date",
+  "checkbox", "url", "email", "phone_number", "status",
+  "people", "files", "created_time", "created_by",
+  "last_edited_time", "last_edited_by",
+];
+
+/**
+ * Parse a "Name:type" string into a Notion property schema object.
+ * For select/multi_select, accepts "Name:select:Option1,Option2,..." to pre-populate options.
+ */
+function parsePropertySpec(spec: string): { name: string; schema: Record<string, unknown> } {
+  const parts = spec.split(":");
+  if (parts.length < 2) {
+    console.error(`Error: invalid property format "${spec}". Expected "Name:type" (e.g. "Artist:rich_text").`);
+    process.exit(1);
+  }
+
+  const name = parts[0].trim();
+  const type = parts[1].trim().toLowerCase();
+
+  if (!name) {
+    console.error(`Error: property name cannot be empty in "${spec}".`);
+    process.exit(1);
+  }
+
+  if (!VALID_PROPERTY_TYPES.includes(type)) {
+    console.error(`Error: unknown property type "${type}" in "${spec}".`);
+    console.error(`Valid types: ${VALID_PROPERTY_TYPES.join(", ")}`);
+    process.exit(1);
+  }
+
+  // For select/multi_select, support optional options after a third colon
+  if ((type === "select" || type === "multi_select") && parts.length >= 3) {
+    const optionNames = parts.slice(2).join(":").split(",").map((o) => o.trim()).filter(Boolean);
+    if (optionNames.length > 0) {
+      return {
+        name,
+        schema: { [type]: { options: optionNames.map((o) => ({ name: o })) } },
+      };
+    }
+  }
+
+  return { name, schema: { [type]: {} } };
+}
+
 const datasourceUpdateCommand = new Command("update")
-  .description("Update a data source")
+  .description("Update a data source's title, schema, or properties")
   .argument("<datasource-id>", "the ID of the data source to update")
   .option("-t, --title <title>", "set a new title")
+  .option("-p, --add-property <spec...>", 'add properties — format: "Name:type" (repeatable)')
+  .option("--remove-property <name...>", "remove properties by name (repeatable)")
   .option("-r, --raw", "output raw JSON instead of formatted text")
   .addHelpText(
     "after",
     `
 Details:
-  Updates a data source's title. Only the specified fields are
-  updated; others remain unchanged.
+  Updates a data source's title and/or schema properties.
+  Only the specified fields are updated; others remain unchanged.
+
+  --add-property accepts "Name:type" where type is one of:
+    rich_text, number, select, multi_select, date, checkbox,
+    url, email, phone_number, status, people, files,
+    created_time, created_by, last_edited_time, last_edited_by
+
+  For select/multi_select, pre-populate options with "Name:select:Opt1,Opt2":
+    --add-property "Genre:select:Lo-fi,Shoegaze,Post-rock"
+
+  --remove-property removes a column by name (sets it to null).
 
 Examples:
-  $ notion-cli datasource update <datasource-id> --title "New Title"
-  $ notion-cli datasource update <datasource-id> --title "New Title" --raw
+  $ notion-cli datasource update <id> --title "New Title"
+  $ notion-cli datasource update <id> -p "Artist:rich_text" -p "Year:number"
+  $ notion-cli datasource update <id> -p "Genre:select:Rock,Pop,Jazz"
+  $ notion-cli datasource update <id> --remove-property "Old Column"
 `,
   )
-  .action(async (datasourceId: string, options: { title?: string; raw?: boolean }) => {
+  .action(async (datasourceId: string, options: {
+    title?: string;
+    addProperty?: string[];
+    removeProperty?: string[];
+    raw?: boolean;
+  }) => {
     const bearerToken = getBearerToken();
     const notion = createNotionClient(bearerToken);
 
@@ -299,8 +365,25 @@ Examples:
       params.title = [{ text: { content: options.title } }];
     }
 
+    // Build properties object from --add-property and --remove-property
+    const properties: Record<string, unknown> = {};
+    if (options.addProperty) {
+      for (const spec of options.addProperty) {
+        const { name, schema } = parsePropertySpec(spec);
+        properties[name] = schema;
+      }
+    }
+    if (options.removeProperty) {
+      for (const name of options.removeProperty) {
+        properties[name] = null;
+      }
+    }
+    if (Object.keys(properties).length > 0) {
+      params.properties = properties;
+    }
+
     if (Object.keys(params).length === 0) {
-      console.error("Error: nothing to update. Use --title to set a new title.");
+      console.error("Error: nothing to update. Use --title, --add-property, or --remove-property.");
       process.exit(1);
     }
 
@@ -316,6 +399,16 @@ Examples:
       console.log(`Data source updated.`);
       console.log(`  Title: ${title}`);
       console.log(`  ID: ${ds.id}`);
+
+      // Show updated schema summary
+      const propEntries = Object.entries(ds.properties || {});
+      if (propEntries.length > 0) {
+        console.log(`  Schema (${propEntries.length} properties):`);
+        for (const [pName, prop] of propEntries) {
+          const schema = prop as DatabasePropertySchema;
+          console.log(`    ${pName}: ${schema.type}`);
+        }
+      }
     } catch (error) {
       console.error(`Error: ${error instanceof Error ? error.message : error}`);
       process.exit(1);

@@ -131,10 +131,11 @@ export interface SearchFilter {
   property: "object";
 }
 
-/** Sort options for search */
+/** Sort options for search. Currently only "last_edited_time" is documented,
+ *  but the timestamp field accepts any string to forward-support new values. */
 export interface SearchSort {
   direction: "ascending" | "descending";
-  timestamp: "last_edited_time";
+  timestamp: "last_edited_time" | (string & {});
 }
 
 /** Parameters for the search endpoint */

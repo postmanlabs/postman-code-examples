@@ -15,7 +15,7 @@ describe("docs", () => {
     const { stdout, exitCode } = await cli("docs");
     assert.equal(exitCode, 0, "should exit 0");
     assert.ok(stdout.includes("MAPPING A WORKSPACE"), "should include mapping section");
-    assert.ok(stdout.includes("SETUP"), "should include setup section");
-    assert.ok(stdout.includes("AGENT USAGE"), "should include agent usage section");
+    assert.ok(stdout.includes("AUTHENTICATION"), "should include authentication section");
+    assert.ok(stdout.includes("WRITING CONTENT"), "should include writing content section");
   });
 });

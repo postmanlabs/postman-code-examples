@@ -6,7 +6,7 @@ A command-line tool for reading and writing to Notion workspaces — built for h
 
 ### What you can do
 
-- **Search** across your workspace by keyword, filtered to pages, databases, or both
+- **Search** across your workspace by keyword, filtered to pages, databases, or both, with sort direction control
 - **Read pages** with full content — blocks are fetched recursively and rendered with structure intact (headings, lists, toggles, callouts, code blocks, and more)
 - **Navigate databases** — view the schema, data sources, and entries with all their property values
 - **Work with data sources directly** — retrieve, query, update, and list templates for the data source layer underneath databases
@@ -46,6 +46,7 @@ const notion = createNotionClient(token);
 const results = await notion.search({
   query: "meeting notes",
   filter: { value: "page", property: "object" },
+  sort: { direction: "descending", timestamp: "last_edited_time" },
 });
 
 // Retrieve a database schema and list its entries via data sources
@@ -81,7 +82,6 @@ Each command uses one or more Postman Collection requests — the same requests 
 | `page property` | [Retrieve a page property item](https://go.postman.co/request/52041987-e3c019ad-9c8b-4975-a142-5549ef771028) | [retrieve-page-property](src/postman/notion-api/pages/retrieve-page-property/client.ts) |
 | `page move` | [Move page](https://go.postman.co/request/52041987-9686de7b-77c0-4d53-b800-bf6c748bc668) | [move-page](src/postman/notion-api/pages/move-page/client.ts) |
 | `database get` | [Retrieve a database](https://go.postman.co/request/52041987-73359528-2278-415f-98f2-4d20274cc69e) | [retrieve-database](src/postman/notion-api/databases/retrieve-database/client.ts) |
-| `database list` | [Retrieve a database](https://go.postman.co/request/52041987-73359528-2278-415f-98f2-4d20274cc69e)<br>[Query a data source](https://go.postman.co/request/52041987-aa498c21-f7e7-4839-bbe7-78957fb7379d) | [retrieve-database](src/postman/notion-api/databases/retrieve-database/client.ts)<br>[query-data-source](src/postman/notion-api/data-sources/query-data-source/client.ts) |
 | `database create` | [Create a database](https://go.postman.co/request/52041987-85ab373b-2fc1-4b9a-a8a6-ee6b9e72728c) | [create-database](src/postman/notion-api/databases/create-database/client.ts) |
 | `database update` | [Update a database](https://go.postman.co/request/52041987-5febd2f6-c9ff-486d-8a4b-71e5c58f82ef) | [update-database](src/postman/notion-api/databases/update-database/client.ts) |
 | `datasource get` | [Retrieve a data source](https://go.postman.co/request/52041987-dfeeac14-f85e-4527-ad2e-d85f79284dd9) | [retrieve-data-source](src/postman/notion-api/data-sources/retrieve-data-source/client.ts) |
@@ -232,9 +232,13 @@ notion-cli search --filter all
 
 # Limit results
 notion-cli search -n 5
+
+# Sort by last edited time (ascending = oldest first, descending = newest first)
+notion-cli search --direction descending
+notion-cli search -d asc
 ```
 
-By default, search returns pages only. Use `--filter database` to find databases, or `--filter all` to show both. Results are paginated — use `--cursor` with the cursor from the previous response to fetch the next page.
+By default, search returns pages only. Use `--filter database` to find databases, or `--filter all` to show both. Use `--direction` to sort results by last edited time (`ascending` or `descending`; shorthand `asc`/`desc` also works). The sort field defaults to `last_edited_time` — the only value currently documented by Notion — but `--sort-by` can override it if new options become available. Results are paginated — use `--cursor` with the cursor from the previous response to fetch the next page.
 
 Example:
 
@@ -360,22 +364,48 @@ Page created.
 
 #### page update
 
-Update a page's properties:
+Update a page's title, property values, icon, or cover image:
 
 ```bash
 notion-cli page update <page-id> --title "New Title"
 ```
 
-Currently supports setting the title via `--title`. For more complex property updates, use the generated client directly.
+Set typed property values with `--set` (`-s`). Format: `"Name:type:value"`:
+
+```bash
+# Set text, number, and select properties
+notion-cli page update <page-id> -s "Blamed On:rich_text:Chatbot" -s "Severity:select:High"
+
+# Multi-select (comma-separated values)
+notion-cli page update <page-id> -s "Tags:multi_select:Hallucination,Customer-Facing,Urgent"
+```
+
+Supported types: `rich_text`, `number`, `select`, `multi_select`, `date`, `checkbox`, `url`, `email`, `phone_number`.
+
+Set the page icon (emoji) or cover image (external URL):
+
+```bash
+# Set icon and cover
+notion-cli page update <page-id> --icon 🎸
+notion-cli page update <page-id> --cover "https://images.unsplash.com/photo-..."
+
+# Combine with other updates
+notion-cli page update <page-id> --title "New Title" --icon 📚 --cover "https://..."
+
+# Remove icon or cover
+notion-cli page update <page-id> --icon none
+notion-cli page update <page-id> --cover none
+```
 
 Example:
 
 ```
-$ notion-cli page update d4e5f6a7-b8c9-0123-defa-234567890123 --title "AI Pilot Retrospective"
+$ notion-cli page update d4e5f6a7-... -s "Status:select:Resolved" --icon ✅
 Page updated.
-  Title: AI Pilot Retrospective
-  ID: d4e5f6a7-b8c9-0123-defa-234567890123
-  URL: https://www.notion.so/AI-Pilot-Retrospective-d4e5f6a7b8c90123defa234567890123
+  Title: Mars Shipping Promise Incident
+  ID: d4e5f6a7-...
+  Icon: ✅
+  URL: https://www.notion.so/Mars-Shipping-Promise-Incident-d4e5f6a7...
 ```
 
 #### page archive
@@ -452,7 +482,7 @@ View a database's metadata and schema:
 notion-cli database get <database-id>
 ```
 
-Shows the database title, ID, parent, dates, URL, data sources, and schema (property names and types). Use `database list` to see the entries.
+Shows the database title, ID, parent, dates, URL, data sources, and schema (property names and types). Use the data source ID from the output to query entries with `datasource query`.
 
 Example:
 
@@ -478,53 +508,8 @@ Schema (6 properties):
   Resolution: rich_text
   Name: title
 
-To list entries: notion-cli database list a6b7c8d9-e0f1-2345-abcd-567890123456
-```
-
-#### database list
-
-List entries in a database:
-
-```bash
-notion-cli database list <database-id>
-
-# Limit results
-notion-cli database list <database-id> --limit 50
-
-# Paginate through entries
-notion-cli database list <database-id> --cursor <cursor>
-```
-
-Retrieves the database to find its data source ID, then queries that data source. Shows entries with titles, IDs, property values, and URLs. Each entry is a Notion page — use `page get <entry-id>` to read its full content. Falls back to the legacy `databases.query()` if no data sources are found.
-
-Example:
-
-```
-$ notion-cli database list a6b7c8d9-e0f1-2345-abcd-567890123456 --limit 2
-🗃️ Listing database entries...
-
-Entries (2+):
-
-────────────────────────────────────────────────────────────
-  📄 Chatbot Told Customer We Sell Jetpacks
-     ID: b7c8d9e0-f1a2-3456-bcde-678901234567
-     Last edited: 1/20/2026
-     URL: https://www.notion.so/Chatbot-Told-Customer-We-Sell-Jetpacks-b7c8d9e0f1a23456bcde678901234567
-     Date: 2026-01-20
-     Severity: High
-     Status: Resolved
-     Blamed On: temperature set to 1.0
-     Resolution: Added product catalog to system prompt
-
-  📄 Auto-Reply Sent CEO's Email to Spam
-     ID: c8d9e0f1-a2b3-4567-cdef-789012345678
-     Last edited: 2/3/2026
-     URL: https://www.notion.so/Auto-Reply-Sent-CEOs-Email-to-Spam-c8d9e0f1a2b34567cdef789012345678
-     Date: 2026-02-03
-     Severity: Critical
-     Status: Investigating
-     Blamed On: overzealous email filter agent
-     Resolution: (empty)
+To query entries: notion-cli datasource query b7c8d9e0-f1a2-3456-bcde-aaaaaaaaaaaa
+To view schema:   notion-cli datasource get b7c8d9e0-f1a2-3456-bcde-aaaaaaaaaaaa
 ```
 
 #### database create
@@ -603,7 +588,7 @@ notion-cli datasource query <datasource-id> --limit 50
 notion-cli datasource query <datasource-id> --cursor <cursor>
 ```
 
-Returns entries with titles, IDs, property values, and URLs — the same output format as `database list`, but operating directly on a data source ID.
+Returns entries with titles, IDs, property values, and URLs.
 
 #### datasource create
 
@@ -615,11 +600,47 @@ notion-cli datasource create <database-id> --title "Q1 Data"
 
 #### datasource update
 
-Update a data source's title:
+Update a data source's title and/or schema properties:
 
 ```bash
 notion-cli datasource update <datasource-id> --title "New Title"
 ```
+
+Add schema properties (columns) with `--add-property` (`-p`):
+
+```bash
+# Add typed columns
+notion-cli datasource update <datasource-id> -p "Blamed On:rich_text" -p "Cost:number"
+
+# For select/multi_select, pre-populate options after a second colon
+notion-cli datasource update <datasource-id> -p "Severity:select:Low,Medium,High,Critical"
+```
+
+Supported property types: `rich_text`, `number`, `select`, `multi_select`, `date`, `checkbox`, `url`, `email`, `phone_number`, `status`, `people`, `files`, `created_time`, `created_by`, `last_edited_time`, `last_edited_by`.
+
+Remove properties with `--remove-property`:
+
+```bash
+notion-cli datasource update <datasource-id> --remove-property "Old Column"
+```
+
+Example:
+
+```
+$ notion-cli datasource update b7c8d9e0-... -p "Blamed On:rich_text" -p "Cost:number" -p "Severity:select:Low,Medium,High,Critical"
+Data source updated.
+  Title: AI Incident Log
+  ID: b7c8d9e0-...
+  Schema (6 properties):
+    Date: date
+    Severity: select
+    Cost: number
+    Blamed On: rich_text
+    Resolution: rich_text
+    Name: title
+```
+
+> **Note:** In the Notion API (2025-09-03), schema properties live on data sources, not databases. Use `datasource update` to manage columns — `database update` only handles title and description.
 
 #### datasource templates
 
@@ -689,38 +710,106 @@ Found 2 block(s):
 
 #### block append
 
-Append a paragraph block to a page or block:
+Append blocks to a page or block:
 
 ```bash
+# Default: append a paragraph
 notion-cli block append <page-id> "Hello, world!"
+
+# Specify block type
+notion-cli block append <page-id> "Section Title" --type heading_2 --color purple
+
+# Callout with emoji icon and background color
+notion-cli block append <page-id> "Important note!" --type callout --icon 🔥 --color red_background
+
+# Code block with language
+notion-cli block append <page-id> "console.log('hi')" --type code --language javascript
+
+# Blocks that need no text
+notion-cli block append <page-id> --type divider
+notion-cli block append <page-id> --type table_of_contents --color gray_background
+
+# Bookmark (text is the URL)
+notion-cli block append <page-id> "https://example.com" --type bookmark
+
+# To-do items
+notion-cli block append <page-id> "Buy milk" --type to_do
+notion-cli block append <page-id> "Already done" --type to_do --checked
+
+# List items
+notion-cli block append <page-id> "First point" --type bulleted_list_item
+notion-cli block append <page-id> "Step one" --type numbered_list_item
 ```
 
-Appends a paragraph block containing the given text. For more complex block structures, use the generated client directly.
+Supported block types: `paragraph` (default), `heading_1`, `heading_2`, `heading_3`, `callout`, `quote`, `divider`, `code`, `bookmark`, `to_do`, `bulleted_list_item`, `numbered_list_item`, `table_of_contents`.
 
-Example:
+Type-specific options:
+
+| Option | Applies to | Example |
+|--------|-----------|---------|
+| `--color <color>` | All types with text | `--color blue`, `--color yellow_background` |
+| `--icon <emoji>` | `callout` | `--icon 🎸` |
+| `--language <lang>` | `code` | `--language python` |
+| `--checked` | `to_do` | `--checked` |
+
+For complex structures (tables, toggles with children, columns, multi-block appends), use `--json` to pass raw Notion block JSON:
+
+```bash
+# Single block as JSON
+notion-cli block append <page-id> --json '{"type":"callout","callout":{"rich_text":[{"type":"text","text":{"content":"Rich!"}}],"icon":{"emoji":"🎯"},"color":"green_background"}}'
+
+# Multiple blocks in one request (up to 100)
+notion-cli block append <page-id> --json '[{"type":"divider","divider":{}},{"type":"paragraph","paragraph":{"rich_text":[{"type":"text","text":{"content":"Bold!"},"annotations":{"bold":true}}]}}]'
+
+# Read from stdin
+cat blocks.json | notion-cli block append <page-id> --json -
+```
+
+Examples:
 
 ```
-$ notion-cli block append d4e5f6a7-b8c9-0123-defa-234567890123 "Update the FAQ before the chatbot invents new company policies."
+$ notion-cli block append d4e5f6a7-... "Section Title" --type heading_2 --color blue
 Appended 1 block(s).
-  Update the FAQ before the chatbot invents new company policies.
+  ## Section Title
+
+$ notion-cli block append d4e5f6a7-... "Warning!" --type callout --icon ⚠️ --color yellow_background
+Appended 1 block(s).
+  ⚠️ Warning!
+
+$ notion-cli block append d4e5f6a7-... --type divider
+Appended 1 block(s).
+  ---
 ```
 
 #### block update
 
-Update a block's text content:
+Update a block's text content and/or color:
 
 ```bash
+# Update text
 notion-cli block update <block-id> "Updated text"
+
+# Update color only (preserves existing text)
+notion-cli block update <block-id> --color red_background
+
+# Update both
+notion-cli block update <block-id> "Updated text" --color purple
 ```
 
-Works with paragraph, heading, bulleted list item, numbered list item, to-do, toggle, callout, and quote blocks. The command retrieves the block first to determine its type, then sends the update with the correct type key.
+Works with paragraph, heading, bulleted list item, numbered list item, to-do, toggle, callout, and quote blocks. The command retrieves the block first to determine its type, then sends the update with the correct type key. Color-only updates preserve the existing text content.
 
 Example:
 
 ```
-$ notion-cli block update a2b3c4d5-e6f7-8901-abcd-123456789012 "The chatbot no longer makes promises about interplanetary logistics."
+$ notion-cli block update a2b3c4d5-... "The chatbot no longer makes promises about interplanetary logistics."
 Block updated.
-  ID: a2b3c4d5-e6f7-8901-abcd-123456789012
+  ID: a2b3c4d5-...
+  Type: paragraph
+  Content: The chatbot no longer makes promises about interplanetary logistics.
+
+$ notion-cli block update a2b3c4d5-... --color blue_background
+Block updated.
+  ID: a2b3c4d5-...
   Type: paragraph
   Content: The chatbot no longer makes promises about interplanetary logistics.
 ```
@@ -1042,10 +1131,7 @@ notion-cli page get <page-id>
 # 3. View a database's schema
 notion-cli database get <database-id>
 
-# 4. List entries in a database
-notion-cli database list <database-id>
-
-# 5. Read an entry or child page
+# 4. Read an entry or child page
 notion-cli page get <page-id>
 ```
 
@@ -1058,7 +1144,6 @@ If you want to modify the CLI, use `npm run cli` during development to run from 
 ```bash
 npm run cli -- integration pages
 npm run cli -- page get <page-id>
-npm run cli -- database list <database-id>
 ```
 
 After making changes, rebuild with `npm run build` to update the linked `notion-cli` command.
@@ -1097,12 +1182,12 @@ Tests are split into independent files — each suite creates its own test resou
 |-------|----------------|------------|
 | `test:docs` | `docs` | prints guide content |
 | `test:user` | `user me`, `user list`, `user get` | `--raw`, ID chaining |
-| `test:search` | `search` | default pages, `--filter database`, `--filter all`, with query, `--limit` |
-| `test:page` | `page get`, `page property`, `page update`, `page create`, `page archive`, `page move` | formatted + `--raw`, create/archive lifecycle, move between parents |
-| `test:block` | `block get`, `block children`, `block append`, `block update`, `block delete` | formatted + `--raw`, full CRUD lifecycle |
+| `test:search` | `search` | default pages, `--filter database`, `--filter all`, with query, `--limit`, `--direction` |
+| `test:page` | `page get`, `page property`, `page update`, `page create`, `page archive`, `page move` | formatted + `--raw`, create/archive lifecycle, move between parents, `--set` typed properties, `--icon` emoji, `--cover` external URL, icon/cover removal |
+| `test:block` | `block get`, `block children`, `block append`, `block update`, `block delete` | formatted + `--raw`, full CRUD lifecycle, `--type` (13 block types), `--color`, `--icon`, `--language`, `--checked`, `--json` (single, array, stdin), `block update --color`, error validation |
 | `test:comment` | `comment add`, `comment list`, `comment get`, `comment reply` | formatted + `--raw`, thread verification |
-| `test:database` | `database create`, `database update`, `database get`, `database list` | `--raw`, data sources, full CRUD lifecycle |
-| `test:datasource` | `datasource get`, `datasource query`, `datasource update`, `datasource templates` | formatted + `--raw`, pagination |
+| `test:database` | `database create`, `database update`, `database get` | `--raw`, data sources, full CRUD lifecycle |
+| `test:datasource` | `datasource get`, `datasource query`, `datasource update`, `datasource templates` | formatted + `--raw`, pagination, `--add-property`, `--remove-property` |
 | `test:file` | `file upload`, `file list`, `file get` | formatted + `--raw`, full upload lifecycle |
 | `test:integration` | `integration pages` | formatted output |
 | `test:auth` | `auth-internal` set/status/clear, `auth-public` status/login/introspect/revoke | config management (isolated HOME), OAuth API tests (env var gated) |
