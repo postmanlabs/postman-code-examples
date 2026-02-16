@@ -33,7 +33,7 @@ Details:
 
   This is the recommended starting point for mapping content. From
   these roots, use "page get" to discover child pages and databases,
-  then traverse the tree with page get / database get / database list.
+  then traverse the tree with page get / database get / datasource query.
 
 Examples:
   $ notion-cli integration pages

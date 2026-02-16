@@ -50,25 +50,17 @@ describe("database", () => {
     const { stdout, exitCode } = await cli("database", "get", testDatabaseId);
     assert.equal(exitCode, 0, "should exit 0");
     assert.ok(stdout.includes("Title:"), "should show database title");
-    // Note: 2025-09-03 API may not return properties on a freshly created
-    // database, so we don't assert Schema is present.
+    assert.ok(stdout.includes("ID:"), "should show database ID");
+    assert.ok(stdout.includes("URL:"), "should show database URL");
   });
 
-  it("database get shows data sources when present", async () => {
+  it("database get shows data sources and query hints", async () => {
     assert.ok(testDatabaseId, "need a database ID from create");
     const { stdout, exitCode } = await cli("database", "get", testDatabaseId);
     assert.equal(exitCode, 0, "should exit 0");
-    // The 2025-09-03 API returns data_sources on databases.
-    assert.ok(stdout.includes("To list entries:"), "should show list hint");
-  });
-
-  it("database list <id>", async () => {
-    assert.ok(testDatabaseId, "need a database ID from create");
-    const { stdout, exitCode } = await cli("database", "list", testDatabaseId);
-    assert.equal(exitCode, 0, "should exit 0");
-    assert.ok(
-      stdout.includes("Entries") || stdout.includes("No entries"),
-      "should show entries or empty message",
-    );
+    // Should point users to datasource commands, not database list
+    assert.ok(stdout.includes("datasource query"), "should hint at datasource query");
+    assert.ok(stdout.includes("datasource get"), "should hint at datasource get for schema");
+    assert.ok(!stdout.includes("database list"), "should not reference deleted database list command");
   });
 });

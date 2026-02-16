@@ -27,8 +27,8 @@ Details:
   the single page. Use the listed IDs to fetch children separately.
 
   For child databases, use:
-    $ notion-cli database get <database-id>   (view schema)
-    $ notion-cli database list <database-id>  (list entries)
+    $ notion-cli database get <database-id>      (view metadata + data source IDs)
+    $ notion-cli datasource query <datasource-id> (list entries)
 
 Examples:
   $ notion-cli page get 35754014-c743-4bb5-aa0a-721f51256861
@@ -39,46 +39,9 @@ Examples:
     const bearerToken = getBearerToken();
     const notion = createNotionClient(bearerToken);
 
-    console.log(`📄 Fetching page...\n`);
-
     try {
       // First fetch page metadata
       const page = await notion.pages.retrieve(pageId);
-
-      // Show page info
-      const title = getPageTitle(page);
-      const parent = page.parent;
-      let parentInfo: string;
-      if (parent.type === "database_id") {
-        parentInfo = `database (ID: ${parent.database_id})`;
-      } else if (parent.type === "data_source_id") {
-        parentInfo = `data source (ID: ${parent.data_source_id})`;
-      } else if (parent.type === "page_id") {
-        parentInfo = `page (ID: ${parent.page_id})`;
-      } else {
-        parentInfo = "workspace (top-level)";
-      }
-
-      console.log(`Title: ${title}`);
-      console.log(`ID: ${page.id}`);
-      console.log(`Parent: ${parentInfo}`);
-      console.log(`Created: ${formatDate(page.created_time)}`);
-      console.log(`Last edited: ${formatDate(page.last_edited_time)}`);
-      console.log(`Archived: ${page.archived}`);
-      if (page.in_trash) {
-        console.log(`In trash: ${page.in_trash}`);
-      }
-      console.log(`URL: ${page.url}`);
-
-      // Show properties (useful for database items)
-      const propEntries = Object.entries(page.properties);
-      if (propEntries.length > 0) {
-        console.log(`\nProperties (${propEntries.length}):`);
-        for (const [name, prop] of propEntries) {
-          const value = formatPropertyValue(prop);
-          console.log(`  ${name}: ${value}`);
-        }
-      }
 
       // Fetch blocks with parallel recursion for speed
       const allBlocks: NotionBlock[] = [];
@@ -122,13 +85,51 @@ Examples:
 
       await fetchBlocksRecursive(pageId);
 
-      if (allBlocks.length === 0) {
-        console.log("\nContent: (no blocks)");
+      // Raw mode: output page + blocks as a single JSON object
+      if (options.raw) {
+        console.log(JSON.stringify({ page, blocks: allBlocks }, null, 2));
         return;
       }
 
-      if (options.raw) {
-        console.log(JSON.stringify(allBlocks, null, 2));
+      // Formatted output
+      console.log(`📄 Fetching page...\n`);
+
+      const title = getPageTitle(page);
+      const parent = page.parent;
+      let parentInfo: string;
+      if (parent.type === "database_id") {
+        parentInfo = `database (ID: ${parent.database_id})`;
+      } else if (parent.type === "data_source_id") {
+        parentInfo = `data source (ID: ${parent.data_source_id})`;
+      } else if (parent.type === "page_id") {
+        parentInfo = `page (ID: ${parent.page_id})`;
+      } else {
+        parentInfo = "workspace (top-level)";
+      }
+
+      console.log(`Title: ${title}`);
+      console.log(`ID: ${page.id}`);
+      console.log(`Parent: ${parentInfo}`);
+      console.log(`Created: ${formatDate(page.created_time)}`);
+      console.log(`Last edited: ${formatDate(page.last_edited_time)}`);
+      console.log(`Archived: ${page.archived}`);
+      if (page.in_trash) {
+        console.log(`In trash: ${page.in_trash}`);
+      }
+      console.log(`URL: ${page.url}`);
+
+      // Show properties (useful for database items)
+      const propEntries = Object.entries(page.properties);
+      if (propEntries.length > 0) {
+        console.log(`\nProperties (${propEntries.length}):`);
+        for (const [name, prop] of propEntries) {
+          const value = formatPropertyValue(prop);
+          console.log(`  ${name}: ${value}`);
+        }
+      }
+
+      if (allBlocks.length === 0) {
+        console.log("\nContent: (no blocks)");
         return;
       }
 
@@ -323,25 +324,91 @@ Examples:
 
 // -- page update --------------------------------------------------------------
 
+/**
+ * Parse a "Name:type:value" property-set spec into a Notion property value object.
+ * Supported types: rich_text, number, select, multi_select, date, checkbox, url, email, phone_number
+ */
+function parsePropertyValue(spec: string): { name: string; value: unknown } {
+  const colonIdx = spec.indexOf(":");
+  if (colonIdx === -1) {
+    console.error(`Error: invalid property format "${spec}". Expected "Name:type:value".`);
+    process.exit(1);
+  }
+
+  const name = spec.slice(0, colonIdx).trim();
+  const rest = spec.slice(colonIdx + 1);
+  const secondColon = rest.indexOf(":");
+  if (secondColon === -1) {
+    console.error(`Error: invalid property format "${spec}". Expected "Name:type:value" (e.g. "Artist:rich_text:Radiohead").`);
+    process.exit(1);
+  }
+
+  const type = rest.slice(0, secondColon).trim().toLowerCase();
+  const rawValue = rest.slice(secondColon + 1);
+
+  switch (type) {
+    case "rich_text":
+      return { name, value: { rich_text: [{ text: { content: rawValue } }] } };
+    case "number":
+      return { name, value: { number: Number(rawValue) } };
+    case "select":
+      return { name, value: { select: { name: rawValue } } };
+    case "multi_select":
+      return { name, value: { multi_select: rawValue.split(",").map((v) => ({ name: v.trim() })) } };
+    case "date":
+      return { name, value: { date: { start: rawValue } } };
+    case "checkbox":
+      return { name, value: { checkbox: rawValue.toLowerCase() === "true" } };
+    case "url":
+      return { name, value: { url: rawValue } };
+    case "email":
+      return { name, value: { email: rawValue } };
+    case "phone_number":
+      return { name, value: { phone_number: rawValue } };
+    default:
+      console.error(`Error: unsupported property type "${type}" in "${spec}".`);
+      console.error(`Supported: rich_text, number, select, multi_select, date, checkbox, url, email, phone_number`);
+      process.exit(1);
+  }
+}
+
 const pageUpdateCommand = new Command("update")
-  .description("Update a page's properties")
+  .description("Update a page's properties, icon, or cover")
   .argument("<page-id>", "the ID of the page to update")
   .option("-t, --title <title>", "set a new title")
+  .option("-s, --set <spec...>", 'set property values — format: "Name:type:value" (repeatable)')
+  .option("--icon <emoji>", "set page icon (emoji)")
+  .option("--cover <url>", "set page cover image (external URL)")
   .option("-r, --raw", "output raw JSON instead of formatted text")
   .addHelpText(
     "after",
     `
 Details:
-  Updates properties on a page. Currently supports setting the title
-  via --title. For more complex property updates, use the generated
-  client directly.
+  Updates properties, icon, or cover on a page. Use --title for the
+  title property, --set for other properties, --icon for the page emoji,
+  and --cover for the cover image.
+
+  --set accepts "Name:type:value" where type is one of:
+    rich_text, number, select, multi_select, date,
+    checkbox, url, email, phone_number
+
+  For multi_select, separate values with commas:
+    --set "Tags:multi_select:Rock,Indie,90s"
+
+  --icon accepts a single emoji character. To remove, pass "none".
+  --cover accepts an external image URL. To remove, pass "none".
 
 Examples:
   $ notion-cli page update <page-id> --title "New Title"
-  $ notion-cli page update <page-id> --title "New Title" --raw
+  $ notion-cli page update <page-id> --set "Artist:rich_text:Radiohead"
+  $ notion-cli page update <page-id> -s "Artist:rich_text:Radiohead" -s "Year:number:1997"
+  $ notion-cli page update <page-id> --icon 🎸
+  $ notion-cli page update <page-id> --cover "https://images.unsplash.com/photo-123"
+  $ notion-cli page update <page-id> --icon 📚 --cover "https://images.unsplash.com/photo-456"
+  $ notion-cli page update <page-id> --icon none   # remove icon
 `,
   )
-  .action(async (pageId: string, options: { title?: string; raw?: boolean }) => {
+  .action(async (pageId: string, options: { title?: string; set?: string[]; icon?: string; cover?: string; raw?: boolean }) => {
     const bearerToken = getBearerToken();
     const notion = createNotionClient(bearerToken);
 
@@ -349,14 +416,45 @@ Examples:
     if (options.title) {
       properties.title = [{ text: { content: options.title } }];
     }
+    if (options.set) {
+      for (const spec of options.set) {
+        const { name, value } = parsePropertyValue(spec);
+        properties[name] = value;
+      }
+    }
 
-    if (Object.keys(properties).length === 0) {
-      console.error("Error: nothing to update. Use --title to set a new title.");
+    // Build the update params
+    const params: Record<string, unknown> = {};
+
+    if (Object.keys(properties).length > 0) {
+      params.properties = properties;
+    }
+
+    // Icon: emoji or null (to remove)
+    if (options.icon) {
+      if (options.icon.toLowerCase() === "none") {
+        params.icon = null;
+      } else {
+        params.icon = { type: "emoji", emoji: options.icon };
+      }
+    }
+
+    // Cover: external URL or null (to remove)
+    if (options.cover) {
+      if (options.cover.toLowerCase() === "none") {
+        params.cover = null;
+      } else {
+        params.cover = { type: "external", external: { url: options.cover } };
+      }
+    }
+
+    if (Object.keys(params).length === 0) {
+      console.error("Error: nothing to update. Use --title, --set, --icon, or --cover.");
       process.exit(1);
     }
 
     try {
-      const page = await notion.pages.update(pageId, { properties });
+      const page = await notion.pages.update(pageId, params);
 
       if (options.raw) {
         console.log(JSON.stringify(page, null, 2));
@@ -367,6 +465,14 @@ Examples:
       console.log(`Page updated.`);
       console.log(`  Title: ${title}`);
       console.log(`  ID: ${page.id}`);
+      if (options.icon) {
+        const iconDisplay = options.icon.toLowerCase() === "none" ? "(removed)" : options.icon;
+        console.log(`  Icon: ${iconDisplay}`);
+      }
+      if (options.cover) {
+        const coverDisplay = options.cover.toLowerCase() === "none" ? "(removed)" : options.cover;
+        console.log(`  Cover: ${coverDisplay}`);
+      }
       console.log(`  URL: ${page.url}`);
     } catch (error) {
       console.error(`Error: ${error instanceof Error ? error.message : error}`);

@@ -111,6 +111,57 @@ describe("datasource", () => {
     assert.ok(stdout.includes("Updated DS"), "should show new title");
   });
 
+  it("datasource update --add-property adds columns to schema", async () => {
+    if (!testDataSourceId) {
+      console.log("  (skipped — no data source ID available)");
+      return;
+    }
+    const { stdout, exitCode } = await cli(
+      "datasource", "update", testDataSourceId,
+      "-p", "Artist:rich_text",
+      "-p", "Year:number",
+      "-p", "Genre:select:Rock,Pop,Jazz",
+    );
+    assert.equal(exitCode, 0, "should exit 0");
+    assert.ok(stdout.includes("Data source updated"), "should confirm update");
+    assert.ok(stdout.includes("Schema"), "should show schema summary");
+    assert.ok(stdout.includes("Artist: rich_text"), "should show Artist column");
+    assert.ok(stdout.includes("Year: number"), "should show Year column");
+    assert.ok(stdout.includes("Genre: select"), "should show Genre column");
+  });
+
+  it("datasource update --add-property --raw returns full response", async () => {
+    if (!testDataSourceId) {
+      console.log("  (skipped — no data source ID available)");
+      return;
+    }
+    const { stdout, exitCode } = await cli(
+      "datasource", "update", testDataSourceId,
+      "-p", "Rating:number", "--raw",
+    );
+    assert.equal(exitCode, 0, "should exit 0");
+    const ds = extractJson(stdout) as { id: string; properties?: Record<string, { type: string }> };
+    assert.ok(ds.id, "should have an id");
+    assert.ok(ds.properties, "should have properties");
+    assert.ok(ds.properties!["Rating"], "should have Rating property");
+    assert.equal(ds.properties!["Rating"].type, "number", "Rating should be number type");
+  });
+
+  it("datasource update --remove-property removes a column", async () => {
+    if (!testDataSourceId) {
+      console.log("  (skipped — no data source ID available)");
+      return;
+    }
+    // Remove the Rating column we just added
+    const { stdout, exitCode } = await cli(
+      "datasource", "update", testDataSourceId,
+      "--remove-property", "Rating",
+    );
+    assert.equal(exitCode, 0, "should exit 0");
+    assert.ok(stdout.includes("Data source updated"), "should confirm update");
+    assert.ok(!stdout.includes("Rating:"), "Rating should be gone from schema");
+  });
+
   it("datasource templates <datasource-id>", async () => {
     if (!testDataSourceId) {
       console.log("  (skipped — no data source ID available)");
