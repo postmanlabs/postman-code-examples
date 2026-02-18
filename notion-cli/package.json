@@ -10,7 +10,7 @@
     "build": "tsc",
     "prepare": "npm run build",
     "cli": "npx tsx cli.ts",
-    "test": "node --import tsx --test ./test/docs.test.ts ./test/user.test.ts ./test/search.test.ts ./test/page.test.ts ./test/block.test.ts ./test/comment.test.ts ./test/database.test.ts ./test/datasource.test.ts ./test/file.test.ts ./test/integration-cmd.test.ts",
+    "test": "node --import tsx --test --test-concurrency=1 ./test/docs.test.ts ./test/user.test.ts ./test/search.test.ts ./test/page.test.ts ./test/block.test.ts ./test/comment.test.ts ./test/database.test.ts ./test/datasource.test.ts ./test/file.test.ts ./test/integration-cmd.test.ts",
     "test:docs": "node --import tsx --test ./test/docs.test.ts",
     "test:user": "node --import tsx --test ./test/user.test.ts",
     "test:search": "node --import tsx --test ./test/search.test.ts",
