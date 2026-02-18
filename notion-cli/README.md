@@ -1218,3 +1218,5 @@ Your integration can only see pages explicitly shared with it. Share a top-level
 ## License
 
 [MIT](LICENSE)
+
+---
