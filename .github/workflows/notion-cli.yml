@@ -2,12 +2,17 @@ name: notion-cli
 
 on:
   push:
+    branches: [main]
     paths:
       - "notion-cli/**"
   pull_request:
     paths:
       - "notion-cli/**"
   workflow_dispatch: # allow manual runs
+
+concurrency:
+  group: notion-cli-${{ github.ref }}
+  cancel-in-progress: true
 
 defaults:
   run:
