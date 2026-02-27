@@ -1,0 +1,15 @@
+[project]
+name = "searchapi-maps-mcp"
+version = "0.1.0"
+description = "An MCP server for Google Maps via SearchApi — search places, get details, reviews, photos, and directions."
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp",
+    "requests",
+]
+
+[project.scripts]
+searchapi-maps-mcp = "server:mcp.run"
+
+[tool.uv]
+dev-dependencies = []
